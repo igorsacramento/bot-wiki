@@ -22,7 +22,7 @@ class Wikipedia extends CrawlerFunctions {
     this.debugLog("Iniciando parsing da tabela...");
 
     const { $ } = this;
-    const tables = $("#mw-content-text table").toArray();
+    const tables = $("#mw-content-text > div > table").toArray();
     if (tables.length === 0) {
       this.debugLog("Nenhuma tabela encontrada na página.");
       return;
@@ -30,22 +30,96 @@ class Wikipedia extends CrawlerFunctions {
 
     const results = [];
 
-    const rows = $(tables[0]).children("tbody").children("tr").toArray();
-    rows.forEach((row) => {
-      const cols = $(row).children("td").toArray();
+    tables.forEach((table) => {
+      const rows = $(table).children("tbody").children("tr").toArray();
 
-      if (!$(cols[2]).children("a").text().trim()) return;
+      const typeValues = this.defineTypeValues(table);
 
-      results.push({
-        company_name: $(cols[2]).children("a").text().trim(),
-        profit: parseFloat(
-          $(cols[4]).text().trim().replace(/\./g, "").replace(",", "."),
-        ),
-        rank: $(cols[1]).text().trim(),
+      let positions = {};
+      rows.forEach((row, index) => {
+        const cols = $(row).children().toArray();
+        if (index === 0) {
+          positions = this.definePositionColumns(cols);
+        } else {
+          results.push({
+            company_name: this.$(cols[positions.company_name])
+              .children("a")
+              .text()
+              .trim(),
+            profit: this.formatProfit(
+              this.$(cols[positions.profit]).text().trim(),
+              typeValues,
+            ),
+            rank: parseInt(this.$(cols[positions.rank]).text().trim()),
+          });
+        }
       });
     });
 
     return results;
+  }
+
+  formatProfit(value, type) {
+    this.debugLog(
+      `Formatando valor de lucro... Tipo: ${type} | Valor: ${value}`,
+    );
+
+    let profit = value;
+
+    if (value.includes(",")) {
+      profit = parseFloat(value.replace(/\./g, "").replace(",", "."));
+    } else {
+      profit = parseFloat(value);
+    }
+
+    if (type === "millions") {
+      profit = profit / 1000;
+    }
+
+    return Number(profit.toFixed(3));
+  }
+
+  definePositionColumns(cols) {
+    this.debugLog("Definindo posição dos dados nas colunas...");
+
+    const positions = {};
+
+    cols.forEach((col, index) => {
+      const text = this.$(col).text().toLowerCase();
+      if (text.includes("nome")) {
+        positions.company_name = index;
+      }
+      if (text.includes("lucro")) {
+        positions.profit = index;
+      }
+      if (
+        text.includes("classificação") ||
+        text.includes("rank") ||
+        text.includes("#")
+      ) {
+        positions.rank = index;
+      }
+    });
+
+    return positions;
+  }
+
+  defineTypeValues(table) {
+    this.debugLog("Definindo tipo de valores da tabela...");
+
+    const htmlCols = this.$(table)
+      .children("tbody")
+      .children("tr")
+      .first()
+      .html();
+
+    if (htmlCols.includes("milhões")) {
+      this.debugLog("A tabela contém valores em milhões.");
+      return "millions";
+    } else {
+      this.debugLog("A tabela contém valores em bilhões.");
+      return "billions";
+    }
   }
 
   async get() {

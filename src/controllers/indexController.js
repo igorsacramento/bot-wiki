@@ -10,6 +10,7 @@ import {
   saveRequesInitialization,
   updateRequestFinished,
 } from "../services/databaseTransactions.js";
+import { isValidParams } from "../services/validade.js";
 
 debugLogger("Carregando Controller Index");
 
@@ -20,7 +21,6 @@ const get = async (req, res, next) => {
     status: "success",
     Name: appName,
     Environment: env,
-    Data: data,
   });
 };
 
@@ -29,34 +29,30 @@ const post = async (req, res, next) => {
 
   const { rule, billions, range } = req.body;
 
-  if (!rule || !billions || !range) {
-    return res.status(400).send({
+  try {
+    isValidParams({ rule, billions, range });
+
+    const requestId = await saveRequesInitialization({ rule, billions, range });
+
+    const wikipedia = new Wikipedia();
+    const { results: wikiData, html } = await wikipedia.get();
+
+    const data = filterByProfit(wikiData, { rule, billions, range });
+
+    updateRequestFinished({ requestId, html });
+
+    res.status(200).send({
+      status: "success",
+      data,
+    });
+  } catch (err) {
+    const statusCode = err.status || 500;
+
+    res.status(statusCode).send({
       status: "error",
-      message: "Parâmetros inválidos. 'rule' e 'billions' são obrigatórios.",
+      message: err.message,
     });
   }
-
-  if (rule === "between" && (!Array.isArray(range) || range.length !== 2)) {
-    return res.status(400).send({
-      status: "error",
-      message:
-        "Parâmetro 'range' inválido. Deve ser um array com dois números.",
-    });
-  }
-
-  const requestId = await saveRequesInitialization({ rule, billions, range });
-
-  const wikipedia = new Wikipedia();
-  const { results: wikiData, html } = await wikipedia.get();
-
-  const data = filterByProfit(wikiData, { rule, billions, range });
-
-  updateRequestFinished({ requestId, html });
-
-  res.status(200).send({
-    status: "success",
-    data,
-  });
 };
 
 export default [

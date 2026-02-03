@@ -26,14 +26,17 @@ export function filterByProfit(data, options) {
   const { rule, billions, range } = options;
 
   if (rule === "greater") {
-    return formatProfit(_.filter(data, (o) => o.profit > billions));
+    return _.filter(data, (o) => Number(o.profit) > Number(billions));
   }
   if (rule === "smaller") {
-    return formatProfit(_.filter(data, (o) => o.profit < billions));
+    return _.filter(data, (o) => Number(o.profit) < Number(billions));
   }
   if (rule === "between" && Array.isArray(range) && range.length === 2) {
-    return formatProfit(
-      _.filter(data, (o) => o.profit >= range[0] && o.profit <= range[1]),
+    const min = Math.min(Number(range[0]), Number(range[1]));
+    const max = Math.max(Number(range[0]), Number(range[1]));
+    return _.filter(
+      data,
+      (o) => Number(o.profit) >= min && Number(o.profit) <= max,
     );
   }
 
