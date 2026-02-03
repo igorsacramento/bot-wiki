@@ -1,40 +1,47 @@
 import debug from "debug";
 import CrawlerFunctions from "./CrawlerFunctions.js";
 
+/**
+ * Classe para manipulação e extração de dados da Wikipedia.
+ */
 class Wikipedia extends CrawlerFunctions {
+  /**
+   * @param {Object} [options]
+   */
   constructor(options = {}) {
     super(options);
     this.debugLog = debug("Wikipedia:dev");
   }
 
+  /**
+   * Acessa a página da Wikipedia e salva o HTML temporário.
+   * @returns {Promise<void>}
+   */
   async getHomePage() {
     this.debugLog("Abrindo página inicial da Wikipedia...");
-
     await this.client(
       "https://pt.wikipedia.org/wiki/Lista_das_maiores_empresas_do_Brasil",
     );
     await this.saveFilesTmp("getHomePage.html");
-
     this.returnElement(["#mw-content-text table tr"], true);
   }
 
+  /**
+   * Faz o parsing da tabela de empresas da Wikipedia.
+   * @returns {Array<{company_name: string, profit: number, rank: number}>}
+   */
   parseTable() {
     this.debugLog("Iniciando parsing da tabela...");
-
     const { $ } = this;
     const tables = $("#mw-content-text > div > table").toArray();
     if (tables.length === 0) {
       this.debugLog("Nenhuma tabela encontrada na página.");
       return;
     }
-
     const results = [];
-
     tables.forEach((table) => {
       const rows = $(table).children("tbody").children("tr").toArray();
-
       const typeValues = this.defineTypeValues(table);
-
       let positions = {};
       rows.forEach((row, index) => {
         const cols = $(row).children().toArray();
@@ -55,7 +62,6 @@ class Wikipedia extends CrawlerFunctions {
         }
       });
     });
-
     return results;
   }
 
@@ -122,13 +128,14 @@ class Wikipedia extends CrawlerFunctions {
     }
   }
 
+  /**
+   * Executa a busca e parsing dos dados da Wikipedia.
+   * @returns {Promise<{results: Array<{company_name: string, profit: number, rank: number}>, html: string}>}
+   */
   async get() {
     this.debugLog("Iniciando pesquisa na Wikipedia...");
-
     await this.getHomePage();
-
     const results = this.parseTable();
-
     return {
       results,
       html: this.lastBody,

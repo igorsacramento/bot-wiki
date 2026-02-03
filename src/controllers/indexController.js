@@ -14,6 +14,12 @@ import { isValidParams } from "../services/validade.js";
 
 debugLogger("Carregando Controller Index");
 
+/**
+ * Handler para GET /
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {Function} next
+ */
 const get = async (req, res, next) => {
   debugLogger("METHOD: GET");
 
@@ -24,6 +30,12 @@ const get = async (req, res, next) => {
   });
 };
 
+/**
+ * Handler para POST /
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {Function} next
+ */
 const post = async (req, res, next) => {
   debugLogger("METHOD: POST");
 

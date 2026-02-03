@@ -4,6 +4,14 @@ import { HttpError } from "../libs/Errors.js";
 
 const debugLog = debug("validade:dev");
 
+/**
+ * Valida os parâmetros da requisição para filtragem de empresas.
+ * @param {Object} params - Parâmetros da requisição
+ * @param {string} params.rule - Regra de filtragem (greater, smaller, between)
+ * @param {number} params.billions - Valor de corte para as regras greater/smaller
+ * @param {Array<number>} [params.range] - Intervalo para a regra between
+ * @throws {HttpError} Se algum parâmetro estiver inválido
+ */
 export function isValidParams(params = {}) {
   debugLog("Validando parâmetros...");
 

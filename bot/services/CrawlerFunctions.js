@@ -7,12 +7,25 @@ import CrawlerInit from "./CrawlerInit.js";
 
 const { saveFiles } = config;
 
+/**
+ * Classe utilitária para funções de manipulação de páginas no crawler.
+ */
 class CrawlerFunctions extends CrawlerInit {
+  /**
+   * @param {Object} [options]
+   */
   constructor(options = {}) {
     super(options);
     this.debugLog = debug("CrawlerFunctions:dev");
   }
 
+  /**
+   * Retorna elementos encontrados na página ou lança erro se obrigatório.
+   * @param {Array<string>} elements - Seletores dos elementos
+   * @param {boolean} [required=false] - Se true, lança erro se não encontrar
+   * @returns {Array<string>} Elementos encontrados
+   * @throws {PageLoadError} Se required=true e não encontrar
+   */
   returnElement(elements, required = false) {
     this.debugLog("returnElement");
     this.debugLog(
@@ -40,6 +53,11 @@ class CrawlerFunctions extends CrawlerInit {
     return [];
   }
 
+  /**
+   * Salva arquivos temporários da resposta do crawler.
+   * @param {string} name - Nome do arquivo
+   * @param {string} [file] - Conteúdo do arquivo (opcional)
+   */
   saveFilesTmp(name, file) {
     if (!saveFiles) return;
 

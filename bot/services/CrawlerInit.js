@@ -6,15 +6,23 @@ import tunnel from "tunnel";
 
 import config from "../config/index.js";
 
+/**
+ * Classe base para inicialização de crawlers HTTP com got.
+ */
 class CrawlerInit {
+  /**
+   * @param {Object} [options]
+   * @param {Object} [options.gotOptions] - Opções para o got
+   */
   constructor({ gotOptions = {} } = {}) {
     this.debugLog = debug("CrawlerInit:dev");
-
     this.gotOptions = gotOptions;
-
     this.gotInit();
   }
 
+  /**
+   * Inicializa o client got e configura hooks e proxy.
+   */
   gotInit() {
     this.debugLog("Iniciando Crawler...");
 
@@ -46,6 +54,10 @@ class CrawlerInit {
     }
   }
 
+  /**
+   * Configura o hook afterResponse para tratamento das respostas HTTP.
+   * @returns {Array<Function>} Array de funções afterResponse
+   */
   setAfterResponse() {
     this.debugLog("Configurando afterResponse...");
 
@@ -93,6 +105,9 @@ class CrawlerInit {
     return afterResponse;
   }
 
+  /**
+   * Configura o proxy HTTP/HTTPS para o client got.
+   */
   setProxy() {
     this.debugLog(`Configurando proxy: ${config.proxy}`);
 
