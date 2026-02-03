@@ -1,0 +1,35 @@
+services:
+  bot-wiki:
+    build: .
+    container_name: bot-wiki
+    env_file:
+      - .env
+    ports:
+      - "9009:9009"
+    depends_on:
+      - db
+    entrypoint: ["/bin/sh", "/app/entrypoint.sh"]
+    volumes:
+      - .:/app
+    networks:
+      - bot-network
+  db:
+    image: postgres:alpine
+    container_name: botwiki-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: botwiki
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - bot-network
+
+volumes:
+  pgdata:
+
+networks:
+  bot-network:
+    external: true

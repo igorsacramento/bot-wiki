@@ -1,0 +1,9 @@
+[
+  {
+    "active": true,
+    "route": "/",
+    "routeName": "index",
+    "controller": "indexController",
+    "authMiddleware": false
+  }
+]
